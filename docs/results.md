@@ -1,0 +1,43 @@
+### Longitude errors, 250–50 BC
+
+| Body | Mechanism rms | Mechanism max | Theory only rms | Theory only max | Period drift |
+| --- | --- | --- | --- | --- | --- |
+| Sun | 0.64° | 1.5° | 0.27° | 0.4° | −0.77°/century |
+| Moon | 3.84° | 9.6° | 1.06° | 2.9° | −4.73°/century |
+| Mercury | 4.34° | 14.3° | 4.28° | 11.9° | −0.77°/century |
+| Venus | 1.70° | 10.6° | 1.47° | 5.7° | −0.77°/century |
+| Mars | 9.74° | 37.9° | 9.70° | 36.5° | −0.85°/century |
+| Jupiter | 4.17° | 10.0° | 3.81° | 7.6° | −1.42°/century |
+| Saturn | 5.30° | 10.8° | 5.44° | 10.3° | −1.79°/century |
+| Ascending node | 0.99° | 1.9° | 0.07° | 0.1° | −1.36°/century |
+
+### Saros dial against real eclipses
+
+| Saros cycle | From | Σ hits / glyphs | Σ penumbral only | Σ no eclipse | Umbral missed | Η hits / glyphs | Η no eclipse | Solar missed |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| −3 (part) | 251 BC | 14/21 | 7 | 0 | 0 | 15/16 | 1 | 8 |
+| −2 | 241 BC | 27/38 | 11 | 0 | 0 | 27/28 | 1 | 14 |
+| −1 | 223 BC | 28/38 | 10 | 0 | 0 | 28/28 | 0 | 13 |
+| +0 | 205 BC | 29/38 | 8 | 1 | 0 | 28/28 | 0 | 14 |
+| +1 | 187 BC | 27/38 | 10 | 1 | 0 | 28/28 | 0 | 15 |
+| +2 | 169 BC | 28/38 | 9 | 1 | 0 | 28/28 | 0 | 16 |
+| +3 | 151 BC | 28/38 | 9 | 1 | 0 | 27/28 | 1 | 16 |
+| +4 | 133 BC | 27/38 | 10 | 1 | 2 | 27/28 | 1 | 16 |
+| +5 | 114 BC | 27/38 | 9 | 2 | 2 | 27/28 | 1 | 16 |
+| +6 | 96 BC | 27/38 | 9 | 2 | 2 | 27/28 | 1 | 17 |
+| +7 | 78 BC | 27/38 | 8 | 3 | 2 | 26/28 | 2 | 19 |
+| +8 (part) | 60 BC | 14/20 | 4 | 2 | 1 | 12/14 | 2 | 12 |
+
+Totals: lunar 303/421 glyphs followed by an umbral eclipse, 104 by a penumbral one only, 14 by none; 9 of 312 umbral eclipses missed. Solar 300/310 glyphs followed by an eclipse somewhere on Earth; 176 of 476 solar eclipses unpredicted.
+Seen from Rhodes: 64 of 67 visible solar eclipses predicted (against 236 of 409 invisible ones); 151 of 155 visible umbral lunar eclipses predicted.
+
+### Monte Carlo
+
+| Case | Tooth σ | Systematic | Moon σ / max (sim) | Moon (Edmunds) | Metonic σ (sim) | Metonic (Edmunds) | Saros σ (sim) | Saros (Edmunds) | Venus σ | Mars σ |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| A | 0.04 | 0° | 5.4° / 18° | 4.4° / 13° | 0.38° (1.5 d) | 0.32° | 0.47° (2.2 d) | 0.38° | 0.39° | 0.57° |
+| B | 0.04 | 0.5° | 8.5° / 27° | 7° / 20° | 0.44° (1.7 d) | 0.5° | 0.95° (4.4 d) | 1.1° | 0.53° | 0.97° |
+| C | 0.04 | 1° | 14.2° / 43° | 14° / 33° | 0.60° (2.3 d) | 0.85° | 1.73° (7.9 d) | 2.1° | 0.85° | 1.68° |
+| D | 0.08 | 2° | 28.5° / 84° | 26° / 57° | 1.21° (4.7 d) | 1.6° | 3.46° (15.8 d) | 3.8° | 1.72° | 3.38° |
+
+Dead band on reversing the crank (median): clearance 40% of tooth height: Moon pointer 49.7°, Metonic pointer 2.9°, Saros pointer 5.1°, Venus 0.8°, Mars 4.4°, Saturn 6.6°; clearance 15% of tooth height: Moon pointer 18.8°, Metonic pointer 1.1°, Saros pointer 1.9°, Venus 0.3°, Mars 1.8°, Saturn 2.6°.

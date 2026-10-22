@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Antikythera</title>
+    <meta name="description" content="An interactive 3D reconstruction of the Antikythera mechanism in WebGPU, with its astronomy checked against a modern ephemeris." />
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./src/style.css" />
+  </head>
+  <body>
+    <header class="masthead">
+      <div class="brand">
+        <h1>Antikythera</h1>
+        <!-- forgot the desc here put it later!!!! -->
+      </div>
+      <nav class="views" id="cams" aria-label="Camera"></nav>
+      <div class="transport">
+        <button id="btn-back" title="Run backwards (,)">◂◂</button>
+        <button id="btn-play" title="Run forwards (Space)">Play</button>
+        <select id="speed" title="Speed">
+          <option value="1">1 day/s</option>
+          <option value="7">1 week/s</option>
+          <option value="29.53" selected>1 month/s</option>
+          <option value="365.25">1 year/s</option>
+          <option value="6585.32">1 Saros/s</option>
+        </select>
+        <button id="btn-shot" title="Save a PNG (S)">Screenshot</button>
+      </div>
+    </header>
+
+    <main class="stage">
+      <div class="viewport" id="viewport">
+        <canvas id="scene"></canvas>
+        <div class="hud tl">
+          <span id="hud-date">–</span>
+          <span id="hud-egypt" class="dim">–</span>
+        </div>
+        <div class="hud tr">
+          <span id="hud-glyph">–</span>
+          <span id="hud-selected" class="dim"></span>
+        </div>
+        <div class="hud br legend">
+          <span><i class="sw surviving"></i>surviving</span>
+          <span><i class="sw reconstructed"></i>reconstructed</span>
+          <span><i class="sw speculative"></i>speculative</span>
+        </div>
+      </div>
+      <p class="status">
+        crank <b id="s-crank">0</b> turns <span class="sep">·</span> b1 <b id="s-b1">–</b> <span class="sep">·</span>
+        <b id="s-days">0</b> days from epoch <span class="sep">·</span> Moon−Sun <b id="s-phase">–</b> <span class="sep">·</span>
+        <b id="s-fps">–</b> fps <span id="s-state" class="state"></span>
+      </p>
+    </main>
+
+    <div class="deck">
+      <section class="panel">
+        <h2>Date and crank</h2>
+        <form class="date-form" id="date-form">
+          <input id="in-day" type="number" min="1" max="31" value="12" aria-label="Day" />
+          <select id="in-month" aria-label="Month">
+            <option value="1">Jan</option><option value="2">Feb</option><option value="3">Mar</option><option value="4">Apr</option>
+            <option value="5" selected>May</option><option value="6">Jun</option><option value="7">Jul</option><option value="8">Aug</option>
+            <option value="9">Sep</option><option value="10">Oct</option><option value="11">Nov</option><option value="12">Dec</option>
+          </select>
+          <input id="in-year" type="number" min="1" max="3000" value="205" aria-label="Year" />
+          <select id="in-era" aria-label="Era"><option value="BC" selected>BC</option><option value="AD">AD</option></select>
+          <button id="btn-go" type="submit">Turn to date</button>
+        </form>
+        <div class="crank-row">
+          <canvas class="crank" id="crank" width="184" height="184" title="Drag round to turn the crank"></canvas>
+          <p class="note">Drag the handle round, or grab the crank on the side of the case. One turn of the crank is 78.6 days. Julian calendar; calibrated to the Saros epoch, Full Moon of 12 May 205 BC.</p>
+        </div>
+        <div class="chips" id="jumps"></div>
+      </section>
+
+      <section class="panel">
+        <h2>View</h2>
+        <ul class="rows">
+          <li><span class="k">Exploded</span><input id="in-explode" type="range" min="0" max="1" step="0.01" value="0" /><output id="out-explode" class="v">0.00</output></li>
+          <li><span class="k">Render</span><span class="toggle" id="render-mode"><button data-value="solid">solid</button><button data-value="xray">x-ray</button></span></li>
+          <li><span class="k">Reconstructed</span><span class="toggle" id="recon-mode"><button data-value="show">show</button><button data-value="ghost">ghost</button><button data-value="hide">hide</button></span></li>
+          <li><span class="k">Plates and case</span><span class="toggle" id="plates-mode"><button data-value="on">on</button><button data-value="off">off</button></span></li>
+          <li><span class="k">Slice</span><span class="toggle" id="slice-axis"><button data-value="off">off</button><button data-value="x">x</button><button data-value="y">y</button><button data-value="z">z</button></span></li>
+          <li><span class="k">Slice position</span><input id="in-slice" type="range" min="-100" max="100" step="0.5" value="0" /><output id="out-slice" class="v">0 mm</output></li>
+        </ul>
+      </section>
+
+      <section class="panel">
+        <h2>Pointers against the sky</h2>
+        <ul class="rows sky" id="readout"></ul>
+        <p class="note">Mechanism against Astronomy Engine, apparent tropical longitudes now.</p>
+      </section>
+
+      <section class="panel">
+        <h2>Back dials</h2>
+        <ul class="rows" id="dials"></ul>
+      </section>
+
+      <section class="panel">
+        <h2 id="gear-title">Selected gear</h2>
+        <div id="gear-body"><p class="note">Click a gear on the model, or a train below. Take the plates off or explode it to reach the inner ones.</p></div>
+      </section>
+
+      <section class="panel">
+        <h2>Accuracy, 250–50 BC</h2>
+        <div class="toggle wrap" id="acc-bodies"></div>
+        <canvas class="chart" id="chart-acc"></canvas>
+        <p class="note" id="acc-note"></p>
+      </section>
+
+      <section class="panel wide">
+        <h2>Gear trains</h2>
+        <div class="scroll"><table class="grid trains" id="trains"></table></div>
+      </section>
+
+      <section class="panel">
+        <h2>Saros dial against real eclipses</h2>
+        <div class="scroll"><table class="grid" id="eclipses"></table></div>
+        <p class="note" id="ecl-note"></p>
+      </section>
+
+      <section class="panel half">
+        <h2>Manufacturing Monte Carlo</h2>
+        <div class="scroll"><table class="grid" id="mc"></table></div>
+        <p class="note" id="mc-note"></p>
+      </section>
+
+      <section class="panel half method">
+        <h2>Method</h2>
+        <p>
+          Tooth counts and trains come from Freeth et al. 2006 and 2008 for the surviving gearing behind the main drive
+          wheel, and from Freeth et al. 2021 for the Sun, nodes and planets in front of it. 30 of the 69 gears survive;
+          they are drawn in patinated bronze, reconstructions in brass, the speculative Dragon Hand in copper.
+        </p>
+        <p>
+          Every coupling is an equation in the angular velocities, solved exactly over the rationals with BigInt; each
+          gear’s mean angle is reduced modulo one turn in exact arithmetic before it becomes a float. The pin-and-slot
+          devices are modelled geometrically and reproduce the Greek epicycle theories exactly. Pointer settings are
+          fitted to the ephemeris over 19 years around the epoch; nothing else is fitted.
+        </p>
+      </section>
+    </div>
+
+    <footer class="keys">
+      <span><kbd>Space</kbd> play</span>
+      <span><kbd>←</kbd> <kbd>→</kbd> a day (Shift: a month)</span>
+      <span><kbd>1</kbd>–<kbd>7</kbd> camera</span>
+      <span><kbd>X</kbd> x-ray</span>
+      <span><kbd>E</kbd> explode</span>
+      <span><kbd>H</kbd> reconstructed parts</span>
+      <span><kbd>S</kbd> screenshot</span>
+      <span>drag orbit · right-drag pan · wheel zoom</span>
+      <a href="https://github.com/ylfeid/antikythera">Source</a>
+    </footer>
+
+    <div class="unsupported" id="unsupported" hidden>
+      <div>
+        <h2>WebGPU is not available</h2>
+        <p id="unsupported-reason">This page needs a browser with WebGPU: a recent Chrome or Edge, Safari 26+, or a recent Firefox.</p>
+      </div>
+    </div>
+
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>
